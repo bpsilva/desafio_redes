@@ -9,10 +9,17 @@ void set_interm(char *data)
 
 	sem_wait(&interm_buffer_access);	
 
-	interm_buffer[interm_set_pos] = (char*)calloc(sizeof(char), strlen(data));
-	strcpy(interm_buffer[interm_set_pos], data);
+	//interm_buffer[interm_set_pos] = (char*)calloc(sizeof(char), strlen(data));
+	//strcpy(interm_buffer[interm_set_pos], data);
+	interm_buffer[interm_set_pos] = data;
 
-	interm_set_pos++;
+
+	if(interm_set_pos == INTERM_BUFFER_SIZE-1)
+		{
+			interm_set_pos = 0;	
+		}else{
+			interm_set_pos++;
+		}
 	
 	sem_post(&interm_buffer_access);
 	sem_post(&interm_data);
@@ -28,12 +35,18 @@ char* get_interm()
 	
 		destiny = (char*)calloc(sizeof(char),strlen(interm_buffer[interm_get_pos]));
 		
-		strcpy(destiny, interm_buffer[interm_get_pos]);
+		strncpy(destiny, interm_buffer[interm_get_pos], strlen(interm_buffer[interm_get_pos]));
 		
 		free(interm_buffer[interm_get_pos]);
 		interm_buffer[interm_get_pos] = 0;
 		
-		interm_get_pos++;
+		if(interm_get_pos == INTERM_BUFFER_SIZE-1)
+		{
+			interm_get_pos = 0;	
+		}else{
+			interm_get_pos++;
+		}
+			
 		
 	sem_post(&interm_buffer_access);
 
@@ -43,10 +56,8 @@ char* get_interm()
 void readFile()
 {
  FILE * pEntry;
-	printf("readFile\n");
   char * buffer;
-  size_t size;
-
+  
   pEntry = fopen ( "myfile" , "rb" );
  
   
@@ -60,37 +71,36 @@ void readFile()
   printf("%li\n", lSize);
 */
 
-
-  buffer = (char*) malloc (sizeof(char)*BLOCK_SIZE);
-  
   do
   {
-  	printf("DO read\n");
-   	size = fread (buffer, 1 , BLOCK_SIZE, pEntry);
+  	buffer = (char*) calloc(sizeof(char) , BLOCK_SIZE);
+   	fread (buffer, 1 , BLOCK_SIZE, pEntry);
+  	
   	if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
+
+
   	set_interm(buffer);
 
-  }while(size == BLOCK_SIZE);
-
-  free(buffer);
+  	
+  }while(strlen(buffer) == BLOCK_SIZE);
+  
 }
 
 
 void saveFile()
 {
-	printf("saveFile\n");
+	
 	FILE * pOut;
   	pOut = fopen ("myfileout", "wb+");
   	char* buffer;
-  	//int size;
+  	
   do
   {
-  	printf("DO SAVE\n");
+	
   	buffer = get_interm();
-  	fwrite (buffer , sizeof(char), BLOCK_SIZE, pOut);	
+  	fwrite (buffer , sizeof(char), strlen(buffer), pOut);	
   }while(strlen(buffer) == BLOCK_SIZE);
-  	
-  
+  	  
 }
 
 void init()
@@ -115,7 +125,12 @@ int main()
 	pthread_create(&read_thread, NULL, (void*)readFile, NULL);
 	pthread_create(&write_thread, NULL, (void*)saveFile, NULL);
 
-	pthread_join(write_thread, NULL);
+	
+	
 	pthread_join(read_thread, NULL);
+	pthread_join(write_thread, NULL);
+	
+
+
 	return 0;
 }

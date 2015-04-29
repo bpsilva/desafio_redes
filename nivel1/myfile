@@ -1,106 +1,98 @@
-INICIO
+1Read block of data from stream
+Reads an array of count elements, each one with a size of size bytes, from the stream and stores them in the block of memory specified by ptr.
+
+The position indicator of the stream is advanced by the total amount of bytes read.
+
+The total amount of bytes read if successful is (size*count).
+
+Parameters
+
+ptr
+    Pointer to a block of memory with a size of at least (size*count) bytes, converted to a void*.
+size
+    Size, in bytes, of each element to be read.
+    size_t is an unsigned integral type.
+count
+    Number of elements, each one with a size of size bytes.
+    size_t is an unsigned integral type.
+stream
+    Pointer to a FILE object that specifies an input stream.
 
 
-"Wings For Marie (Pt. 1)"
+Return Value
+The total number of elements successfully read is returned.
+If this number differs from the count parameter, either a reading error occurred or the end-of-file was reached while reading. In both cases, the proper indicator is set, which can be checked with ferror and feof, respectively.
+If either size or count is zero, the function returns zero and both the stream state and the content pointed by ptr remain unchanged.
+size_t is an unsigned integral type.
 
-You believed.
-You believed in moments not conceived.
-You believed in me.
+Example
 
-A passionate spirit.
-Uncompromised
-boundless and open.
-A light in your eyes, then, immobilized.
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
 
-Vacant, broken.
-Fell at the hands of
-Those movements that I wouldn't see.
-Cause it was you who prayed for me so.
-What have I done to be a son to an angel?
-What have I done to be worthy?
+	
 
-Day light dims leaving cold fluorescence.
-Difficult to see you in this light.
-Please forgive this selfish question, but
-What am I to say to all these ghouls tonight?
+/* fread example: read an entire file */
+#include <stdio.h>
+#include <stdlib.h>
 
-She never told a lie.
-Well might of told a lie.
-But never lived one.
-Didn't have a life.
-Didn't have a life.
-But surely saved one.
-Saved on.
+int main () {
+  FILE * pFile;
+  long lSize;
+  char * buffer;
+  size_t result;
 
-Alright, now it's time for us to let you go. 
+  pFile = fopen ( "myfile.bin" , "rb" );
+  if (pFile==NULL) {fputs ("File error",stderr); exit (1);}
 
+  // obtain file size:
+  fseek (pFile , 0 , SEEK_END);
+  lSize = ftell (pFile);
+  rewind (pFile);
 
-"Wings For Marie (Pt. 1)"
+  // allocate memory to contain the whole file:
+  buffer = (char*) malloc (sizeof(char)*lSize);
+  if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
 
-You believed.
-You believed in moments not conceived.
-You believed in me.
+  // copy the file into the buffer:
+  result = fread (buffer,1,lSize,pFile);
+  if (result != lSize) {fputs ("Reading error",stderr); exit (3);}
 
-A passionate spirit.
-Uncompromised
-boundless and open.
-A light in your eyes, then, immobilized.
+  /* the whole file is now loaded in the memory buffer. */
 
-Vacant, broken.
-Fell at the hands of
-Those movements that I wouldn't see.
-Cause it was you who prayed for me so.
-What have I done to be a son to an angel?
-What have I done to be worthy?
-
-Day light dims leaving cold fluorescence.
-Difficult to see you in this light.
-Please forgive this selfish question, but
-What am I to say to all these ghouls tonight?
-
-She never told a lie.
-Well might of told a lie.
-But never lived one.
-Didn't have a life.
-Didn't have a life.
-But surely saved one.
-Saved on.
-
-Alright, now it's time for us to let you go. 
-
-
-"Wings For Marie (Pt. 1)"
-
-You believed.
-You believed in moments not conceived.
-You believed in me.
-
-A passionate spirit.
-Uncompromised
-boundless and open.
-A light in your eyes, then, immobilized.
-
-Vacant, broken.
-Fell at the hands of
-Those movements that I wouldn't see.
-Cause it was you who prayed for me so.
-What have I done to be a son to an angel?
-What have I done to be worthy?
-
-Day light dims leaving cold fluorescence.
-Difficult to see you in this light.
-Please forgive this selfish question, but
-What am I to say to all these ghouls tonight?
-
-She never told a lie.
-Well might of told a lie.
-But never lived one.
-Didn't have a life.
-Didn't have a life.
-But surely saved one.
-Saved on.
-
-Alright, now it's time for us to let you go. 
-
-
-FIM
+  // terminate
+  fclose (pFile);
+  free (buffer);
+  return 0;
+}
