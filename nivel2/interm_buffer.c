@@ -32,11 +32,12 @@ char* get_interm()
 	sem_wait(&interm_data);
 	sem_wait(&interm_buffer_access);	
 	
-		destiny = (char*)calloc(sizeof(char),strlen(interm_buffer[interm_get_pos]));
+		destiny = interm_buffer[interm_get_pos];
+		//destiny = (char*)calloc(sizeof(char),strlen(interm_buffer[interm_get_pos]));
 		
-		strncpy(destiny, interm_buffer[interm_get_pos], strlen(interm_buffer[interm_get_pos]));
+		//strncpy(destiny, interm_buffer[interm_get_pos], strlen(interm_buffer[interm_get_pos]));
 		
-		free(interm_buffer[interm_get_pos]);
+		//free(interm_buffer[interm_get_pos]);
 		interm_buffer[interm_get_pos] = 0;
 		
 		if(interm_get_pos == INTERM_BUFFER_SIZE-1)
@@ -57,7 +58,7 @@ void readFile()
  FILE * pEntry;
   char * buffer;
   
-  pEntry = fopen ( "myfile" , "rb" );
+  pEntry = fopen ( filename, "rb" );
  
   
   if (pEntry==NULL) {fputs ("File error",stderr); exit (1);}
@@ -72,16 +73,12 @@ void readFile()
 
   do
   {
-  	buffer = (char*) calloc(sizeof(char) , BLOCK_SIZE);
-   	fread (buffer, 1 , BLOCK_SIZE, pEntry);
+  	buffer = (char*) calloc(sizeof(char) , INTERM_BLOCK_SIZE);
+   	fread (buffer, 1 , INTERM_BLOCK_SIZE, pEntry);
   	
   	if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
-
-
   	set_interm(buffer);
-
-  	
-  }while(strlen(buffer) == BLOCK_SIZE);
+  }while(strlen(buffer) == INTERM_BLOCK_SIZE);
   
 }
 
@@ -98,39 +95,10 @@ void saveFile()
 	
   	buffer = get_interm();
   	fwrite (buffer , sizeof(char), strlen(buffer), pOut);	
-  }while(strlen(buffer) == BLOCK_SIZE);
+  }while(strlen(buffer) == INTERM_BLOCK_SIZE);
   	  
 }
 
-void init()
-{
-	int index;
-
-	interm_set_pos = 0;
-	interm_get_pos = 0;
-	sem_init(&interm_data, 0, 0);
-	sem_init(&interm_buffer_space, 0, INTERM_BUFFER_SIZE);
-	sem_init(&interm_buffer_access, 0, 1);
-
-	for(index = 0; index < INTERM_BUFFER_SIZE ; index++)
-	{
-		interm_buffer[index] = 0;
-	}
-}
 
 
-int main()
-{
-	init();
-	pthread_create(&read_thread, NULL, (void*)readFile, NULL);
-	pthread_create(&write_thread, NULL, (void*)saveFile, NULL);
 
-	
-	
-	pthread_join(read_thread, NULL);
-	pthread_join(write_thread, NULL);
-	
-
-
-	return 0;
-}

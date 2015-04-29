@@ -1,7 +1,7 @@
 #ifndef INTERM_BUFFER_H
 #define INTERM_BUFFER_H
-#define INTERM_BUFFER_SIZE 4
-#define BLOCK_SIZE 10
+#define INTERM_BUFFER_SIZE 100
+#define INTERM_BLOCK_SIZE 512
 #include <pthread.h>
 #include <semaphore.h>
 int interm_get_pos;
@@ -19,7 +19,7 @@ sem_t interm_buffer_access;//mutual exclusion to set or get data
 sem_t interm_buffer_space;//manage the maximum capacity of the buffer
 void saveFile();
 void readFile();
-
-pthread_t read_thread;
-pthread_t write_thread;
+char filename[30];
+pthread_t interm_read_thread;
+pthread_t interm_write_thread;
 #endif
