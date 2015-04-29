@@ -8,9 +8,7 @@ void set_interm(char *data)
 {
 
 	sem_wait(&interm_buffer_access);	
-
-	//interm_buffer[interm_set_pos] = (char*)calloc(sizeof(char), strlen(data));
-	//strcpy(interm_buffer[interm_set_pos], data);
+	sem_wait(&interm_buffer_space);	
 	interm_buffer[interm_set_pos] = data;
 
 
@@ -21,6 +19,7 @@ void set_interm(char *data)
 			interm_set_pos++;
 		}
 	
+
 	sem_post(&interm_buffer_access);
 	sem_post(&interm_data);
 }
@@ -47,7 +46,7 @@ char* get_interm()
 			interm_get_pos++;
 		}
 			
-		
+	sem_post(&interm_buffer_space);		
 	sem_post(&interm_buffer_access);
 
 	return destiny;
@@ -110,6 +109,7 @@ void init()
 	interm_set_pos = 0;
 	interm_get_pos = 0;
 	sem_init(&interm_data, 0, 0);
+	sem_init(&interm_buffer_space, 0, INTERM_BUFFER_SIZE);
 	sem_init(&interm_buffer_access, 0, 1);
 
 	for(index = 0; index < INTERM_BUFFER_SIZE ; index++)
