@@ -52,10 +52,10 @@ void interm_to_out()
 {
 	
 	message *msg;
-	int i;
+	
 	do
 	{
-		sem_getvalue(&out_buffer_space, &i);
+		
 		msg = (message*)malloc(sizeof(struct message));
 		msg->flag = 0x7E;
 		//message.address

@@ -1,9 +1,11 @@
 #include "out_buffer.h"
 #include "interm_buffer.h"
+#include "client_udp.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-void init()
+
+void init(int argc, char *argv[])
 {
 	int index;
 
@@ -33,6 +35,10 @@ void init()
 		interm_buffer[index] = 0;
 	}
 
+
+//CLIENT UDP INIT
+	connection(argc, argv);
+
 }
 
 void write_file_aux()
@@ -51,9 +57,9 @@ void write_file_aux()
   	  
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	init();
+	init(argc, argv);
 	pthread_t write_aux;
 /*	int opt;
 	
