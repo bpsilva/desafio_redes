@@ -21,6 +21,7 @@ typedef struct SOCKET{
 	struct hostent *server;
 
 }SOCKET;
+pthread_t send_out;
 void send_message(message *msg);
 char* receive_message();
 void close_connection();
