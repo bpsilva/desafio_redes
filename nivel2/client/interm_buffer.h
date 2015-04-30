@@ -17,9 +17,5 @@ void init();// semaphores, interm_set_pos, interm_get_pos
 sem_t interm_data; // how many data blocks are avaliable for reading
 sem_t interm_buffer_access;//mutual exclusion to set or get data
 sem_t interm_buffer_space;//manage the maximum capacity of the buffer
-void saveFile();
-void readFile();
-char filename[30];
-pthread_t interm_read_thread;
-pthread_t interm_write_thread;
+
 #endif

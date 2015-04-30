@@ -25,10 +25,6 @@ void connection(int argc, char *argv[])
 	s.serv_addr.sin_family = AF_INET;     
 	s.serv_addr.sin_port = htons(PORT);    
 	s.serv_addr.sin_addr = *((struct in_addr *)s.server->h_addr);
-
-
-	
-
 }
 
 void send_message(char *msg)
@@ -43,23 +39,16 @@ char* receive_message()
 	char* buffer = 0;
 	s.length = sizeof(struct sockaddr_in);
 	s.n = recvfrom(s.sockfd, buffer, strlen(buffer), 0, (struct sockaddr *) &s.from, &s.length);
+
 	if (s.n < 0)
 		printf("ERROR recvfrom");
 
 	return buffer;
 }
+
 void close_connection()
 {
 	close(s.sockfd);
 }
 
-void send_out_buffer()
-{
-	char *msg;
- 	do
-  	{
-		msg = get_out();
 
-		send_message(msg);
-  	}while(strlen(msg) == INTERM_BLOCK_SIZE);//////alteraaaarararara
-}

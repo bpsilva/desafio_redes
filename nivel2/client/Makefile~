@@ -1,11 +1,14 @@
 
 
 
-all: interm_buffer.o out_buffer.o main.o client_udp.o
-	gcc -o level2 interm_buffer.o out_buffer.o main.o client_udp.o -pthread
+all: interm_buffer.o out_buffer.o main.o client_udp.o manager.o
+	gcc -o level2 interm_buffer.o out_buffer.o main.o client_udp.o manager.o -pthread
 
 main.o:main.c
 	gcc -c main.c -Wall 
+
+manager.o: manager.c
+	gcc -c manager.c -Wall 
 
 client_udp.o: client_udp.c
 	gcc -c client_udp.c -Wall 

@@ -21,11 +21,12 @@ typedef struct SOCKET{
 	struct hostent *server;
 
 }SOCKET;
+
 pthread_t send_out;
 void send_message(char *msg);
 char* receive_message();
 void close_connection();
 void connection(int argc, char *argv[]);
 
-void send_out_buffer();
+
 #endif
