@@ -47,20 +47,23 @@ void write_file_aux()
 	FILE * pOut;
   	pOut = fopen ("myfileout", "wb+");
   	char* buffer;
-  	
+  	char* aux;
+  	int i = 0;
   	do
   	{
-
-	buffer = get_out()->data;
+  	buffer = get_out();
+  	//buffer = (char*)calloc(sizeof(char), strlen(aux)-6);	
+	//strncpy(buffer, aux+3, strlen(buffer));
+	printf("%i\n", strlen(buffer));
 	fwrite (buffer , sizeof(char), strlen(buffer), pOut);	
-  	}while(strlen(buffer) == INTERM_BLOCK_SIZE);
-  	  
+  	}while(strlen(buffer) == INTERM_BLOCK_SIZE+5);
+  	
 }
 
 int main(int argc, char *argv[])
 {
 	init(argc, argv);
-	//pthread_t write_aux;
+	pthread_t write_aux;
 /*	int opt;
 	
 
@@ -86,13 +89,13 @@ int main(int argc, char *argv[])
 
 				pthread_create(&read_thread, NULL, (void*)readFile, NULL);
 				pthread_create(&i_to_out_thread, NULL, (void*)interm_to_out, NULL);
-				//pthread_create(&write_aux, NULL, (void*)write_file_aux, NULL);
-				pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
+				pthread_create(&write_aux, NULL, (void*)write_file_aux, NULL);
+				//pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
 				
 				pthread_join(read_thread, NULL);
 				pthread_join(i_to_out_thread, NULL);
-				//pthread_join(write_aux, NULL);
-				pthread_join(send_out, NULL);
+				pthread_join(write_aux, NULL);
+				//pthread_join(send_out, NULL);
 			/*
 				break;
 			default:

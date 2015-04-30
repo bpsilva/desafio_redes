@@ -35,13 +35,15 @@ void connection_server()
 	
 	/* receive from socket */
 	char buf[600];
+	message msg;
 	do
 	{
 		
-		serv.n = recvfrom(serv.sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &serv.cli_addr, &serv.clilen);
+		serv.n = recvfrom(serv.sockfd, buf, strlen(buf), 0, (struct sockaddr *) &serv.cli_addr, &serv.clilen);
 		if (serv.n < 0) 
 			printf("ERROR on recvfrom");
 
+		
 		printf("%s", buf);
 	}while(strlen(buf) ==600);
 	

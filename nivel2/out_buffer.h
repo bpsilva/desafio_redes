@@ -21,10 +21,10 @@ char crc[2];
 }message;
 
 
-message* out_buffer[OUT_BUFFER_SIZE];
+char* out_buffer[OUT_BUFFER_SIZE];
 
-message* get_out(); // gets the avaliable data but dont deletes any data of the buffer
-void set_out(message *data); // insert data on out buffer
+char* get_out(); // gets the avaliable data but dont deletes any data of the buffer
+void set_out(char *data); // insert data on out buffer
 void interm_to_out();
 
 sem_t out_data; // how many data blocks are avaliable for reading

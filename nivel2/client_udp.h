@@ -22,7 +22,7 @@ typedef struct SOCKET{
 
 }SOCKET;
 pthread_t send_out;
-void send_message(message *msg);
+void send_message(char *msg);
 char* receive_message();
 void close_connection();
 void connection(int argc, char *argv[]);

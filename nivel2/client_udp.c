@@ -31,10 +31,10 @@ void connection(int argc, char *argv[])
 
 }
 
-void send_message(message *msg)
+void send_message(char *msg)
 {
-	printf("%s\n", msg->data);
-	s.n = sendto(s.sockfd, msg, strlen((char*)msg), 0, (const struct sockaddr *) &s.serv_addr, sizeof(struct sockaddr_in));
+	
+	s.n = sendto(s.sockfd, msg, strlen(msg), 0, (const struct sockaddr *) &s.serv_addr, sizeof(struct sockaddr_in));
 	if (s.n < 0) 
 		printf("ERROR sendto");
 }
@@ -55,11 +55,11 @@ void close_connection()
 
 void send_out_buffer()
 {
-	message *msg;
+	char *msg;
  	do
   	{
 		msg = get_out();
 
 		send_message(msg);
-  	}while(strlen(msg->data) == INTERM_BLOCK_SIZE);
+  	}while(strlen(msg) == INTERM_BLOCK_SIZE);//////alteraaaarararara
 }

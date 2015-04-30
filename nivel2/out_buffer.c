@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-void set_out(message *message)
+void set_out(char *message)
 {
 
 	sem_wait(&out_buffer_space);
@@ -26,10 +26,10 @@ void set_out(message *message)
 	sem_post(&out_data);
 }
 
-message* get_out()
+char* get_out()
 {
 
-	message *destiny;
+	char *destiny;
 
 	sem_wait(&out_data);
 	sem_wait(&out_buffer_access);	
@@ -48,24 +48,59 @@ message* get_out()
 	return destiny;
 }
 
+
+void copy_data(char* msg, char* text, int size)
+{
+	int i;
+	for(i = 0; i < size;i++)
+	{
+		msg[i+24] = text[i];
+	}
+}
+
 void interm_to_out()
 {
+	char *aux;
+	char *text;
+	char* msg;
 	
-	message *msg;
-	
+	char *flag ;
+	char *address ;
+	char *control ;
+	char *crc ;
 	do
 	{
+		text = get_interm();
+
+		msg = (char*)calloc(sizeof(char), strlen(text)+7);
+
 		
-		msg = (message*)malloc(sizeof(struct message));
-		msg->flag = 0x7E;
-		//message.address
-		//control;
-		msg->opcode = OP_DATA;
-		msg->data = get_interm();
-		//crc;
+		address = (char*)calloc(sizeof(char), 1);
+		strcpy(address, "A");
+		
+		control = (char*)calloc(sizeof(char), 1);
+		strcpy(control, "C");
+		
+		crc = (char*)calloc(sizeof(char), 1);
+		
+		text[strlen(text)-1] = 'R';
+		crc[0] = 'C';
+
+		flag = (char*)calloc(sizeof(char), 1);
+		flag[0] = 'F';
+		
+		strcat(msg, flag);
+		strcat(msg, address);
+		strcat(msg, control);		
+		strcat(msg, text);
+		strcat(msg, crc);
+		strcat(msg, flag);
+		//strncpy(msg, text, strlen(text));
+		//copy_data(msg, text, strlen(text));
+
 		set_out(msg);
 	 	
-	}while(strlen(msg->data) == INTERM_BLOCK_SIZE);
+	}while(strlen(text) == INTERM_BLOCK_SIZE);
 }
 
 
