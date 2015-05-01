@@ -34,8 +34,9 @@ char* get_out()
 	sem_wait(&out_data);
 	sem_wait(&out_buffer_access);	
 	
+	
 		destiny = out_buffer[out_get];
-		out_buffer[out_get] = 0;
+		
 
 		if(out_get == OUT_BUFFER_SIZE-1)
 		{
@@ -44,7 +45,7 @@ char* get_out()
 			out_get++;
 		}
 	sem_post(&out_buffer_access);
-	sem_post(&out_buffer_space);
+	//sem_post(&out_buffer_space);
 	return destiny;
 }
 

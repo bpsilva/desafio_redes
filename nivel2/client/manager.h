@@ -36,4 +36,8 @@ void rcv_out_buffer();
 
 void send_write_request();
 
+//---------------------CONFIRMATION-----------------
+pthread_t recv_confirmation;
+void recv_confirm();
+
 #endif

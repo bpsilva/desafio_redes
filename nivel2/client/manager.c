@@ -8,7 +8,7 @@
 void interm_to_out()
 {
 	char *text, * msg, *flag, *address , *control, *crc;
-	
+	int NS = 0;
 	do
 	{
 		text = get_interm();
@@ -20,8 +20,9 @@ void interm_to_out()
 		strcpy(address, "A");
 		
 		control = (char*)calloc(sizeof(char), 1);
-		strcpy(control, "C");
+		control[0] = NS;
 		
+
 		crc = (char*)calloc(sizeof(char), 2);
 		
 		crc[0] = 'R';
@@ -41,6 +42,10 @@ void interm_to_out()
 
 		set_out(msg);
 	 	
+	 	if(NS == OUT_BUFFER_SIZE-1)
+	 	{	NS = 0; }
+	 	else {	NS++;}
+
 	}while(strlen(text) == INTERM_BLOCK_SIZE);
 }
 
@@ -110,7 +115,7 @@ void init(int argc, char *argv[])
 	{
 		in_buffer[index] = 0;
 	}
-	
+
 //INTERM BUFFER INIT
 	interm_set_pos = 0;
 	interm_get_pos = 0;
@@ -122,6 +127,8 @@ void init(int argc, char *argv[])
 	{
 		interm_buffer[index] = 0;
 	}
+
+
 
 
 //CLIENT UDP INIT
@@ -149,10 +156,12 @@ void send_out_buffer()
 				pthread_create(&read_file_thread, NULL, (void*)readFile, NULL);
 				pthread_create(&i_to_out_thread, NULL, (void*)interm_to_out, NULL);
 				pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
+				pthread_create(&recv_confirmation, NULL, (void*)recv_confirm, NULL);
 				
 				pthread_join(read_file_thread, NULL);
 				pthread_join(i_to_out_thread, NULL);
 				pthread_join(send_out, NULL);
+				pthread_join(recv_confirmation, NULL);
  }
 
 void send_write_request()
@@ -190,6 +199,33 @@ void send_write_request()
 		
 		send_file();
 }
+
+void recv_confirm()
+{
+	char* msg = receive_message();
+	if((msg[2]>>4) == 0)//RR
+	{
+		while((msg[2] & 3) != out_win_begin)
+		{
+				if(out_win_begin == OUT_BUFFER_SIZE-1)
+				{
+					out_win_begin = 0;	
+				}else{
+					out_win_begin++;
+				}
+			sem_post(&out_buffer_space);
+		}
+	}
+	if((msg[2]>>4) == 1)//REJ
+	{
+		sem_wait(&out_buffer_access);
+		out_get = (msg[2] & 3);
+		sem_post(&out_buffer_access);
+	}
+
+
+}
+
 
 void rcv_out_buffer()
 {

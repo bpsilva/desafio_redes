@@ -98,7 +98,7 @@ void init()
 		out_buffer[index] = 0;
 	}
 
-//OUT BUFFER INIT
+//IN BUFFER INIT
 	in_get = 0;
 	in_win_end = 0;
 	in_win_begin = 0;
@@ -160,6 +160,8 @@ void recv_to_in()
 	}while(strlen(buf) == INTERM_BLOCK_SIZE+6);	
 
 }
+
+
 
 void entry_monitor()
 {
