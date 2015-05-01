@@ -1,19 +1,13 @@
 #include "server_udp.h"
 
-struct sock serv;
 
-void saveFile(char *buffer)
+
+void send_message(char* msg)
 {
-
-	FILE * pOut;
-  	pOut = fopen ("myfileout", "wb+");
-  	fwrite (buffer , sizeof(char), strlen(buffer), pOut);
-  
+		serv.n = sendto(serv.sockfd, msg, strlen(msg), 0,(struct sockaddr *) &serv.cli_addr, sizeof(struct sockaddr));
+		if (serv.n  < 0) 
+			printf("ERROR on sendto");
 }
-
-
-
-
 
 void connection_server()
 {
@@ -33,19 +27,13 @@ void connection_server()
 	serv.clilen = sizeof(struct sockaddr_in);
 	
 	/* receive from socket */
-	char buf[600];
-	
 
-		serv.n = recvfrom(serv.sockfd, buf, strlen(buf), 0, (struct sockaddr *) &serv.cli_addr, &serv.clilen);
-		if (serv.n < 0) 
-			printf("ERROR on recvfrom");
-			printf("%s", buf);
 
-	close(serv.sockfd);
 }
 
-int main()
+void close_connection()
 {
-	connection_server();
-	return 0;
+	close(serv.sockfd);	
 }
+
+

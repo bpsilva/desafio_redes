@@ -9,7 +9,13 @@
 #include <string.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
 #define PORT 4000
+
+
+
+pthread_t recv_in;
 
 	struct sock
 	{
@@ -17,6 +23,13 @@
 		socklen_t clilen;
 		struct sockaddr_in serv_addr, cli_addr;
 	}sock;
+struct sock serv;
+
 
 	void connection_server();
+	void close_connection();
+	void entry_monitor();
+	void recv_to_in();
+
+	void send_message(char* msg);
 #endif

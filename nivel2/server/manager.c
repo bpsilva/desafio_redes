@@ -3,7 +3,7 @@
 #include "out_buffer.h"
 #include "in_buffer.h"
 #include "interm_buffer.h"
-#include "client_udp.h"
+#include "server_udp.h"
 
 void interm_to_out()
 {
@@ -22,10 +22,10 @@ void interm_to_out()
 		control = (char*)calloc(sizeof(char), 1);
 		strcpy(control, "C");
 		
-		crc = (char*)calloc(sizeof(char), 2);
+		crc = (char*)calloc(sizeof(char), 1);
 		
-		crc[0] = 'R';
-		crc[1] = 'C';
+		text[strlen(text)-1] = 'R';
+		crc[0] = 'C';
 
 		flag = (char*)calloc(sizeof(char), 1);
 		flag[0] = 'F';
@@ -81,7 +81,7 @@ void saveFile()
 }
 
 
-void init(int argc, char *argv[])
+void init()
 {
 	int index;
 
@@ -98,7 +98,7 @@ void init(int argc, char *argv[])
 		out_buffer[index] = 0;
 	}
 
-//IN BUFFER INIT
+//OUT BUFFER INIT
 	in_get = 0;
 	in_win_end = 0;
 	in_win_begin = 0;
@@ -110,7 +110,7 @@ void init(int argc, char *argv[])
 	{
 		in_buffer[index] = 0;
 	}
-	
+
 //INTERM BUFFER INIT
 	interm_set_pos = 0;
 	interm_get_pos = 0;
@@ -125,7 +125,7 @@ void init(int argc, char *argv[])
 
 
 //CLIENT UDP INIT
-	connection(argc, argv);
+	connection_server();
 
 }
 
@@ -137,88 +137,50 @@ void send_out_buffer()
 		msg = get_out();
 
 		send_message(msg);
-		printf("%i    %i\n", strlen(msg), INTERM_BLOCK_SIZE+6);
   	}while(strlen(msg) == INTERM_BLOCK_SIZE+6);
 }
 
 
- void send_file()
- {
-
-
-				pthread_create(&read_file_thread, NULL, (void*)readFile, NULL);
-				pthread_create(&i_to_out_thread, NULL, (void*)interm_to_out, NULL);
-				pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
-				
-				pthread_join(read_file_thread, NULL);
-				pthread_join(i_to_out_thread, NULL);
-				pthread_join(send_out, NULL);
- }
-
-void send_write_request()
+void recv_to_in()
 {
-		char * msg, *flag, *address , *control, *crc, *opcode;
-		
-		msg = (char*)calloc(sizeof(char), strlen(filename)+6);
-	
-		address = (char*)calloc(sizeof(char), 1);
-		address[0] = BROADCAST;
-	
-		control = (char*)calloc(sizeof(char), 1);
-		control[0] = 'W';
-		
-		opcode = (char*)calloc(sizeof(char), 1);
-		opcode[0] = SEND_REQ;
+	char buf[520];
+	do
+	{	
 
-		crc = (char*)calloc(sizeof(char), 2);
-		
-		crc[0] =  'R';
-		crc[1] = 'C';
+		memset(buf,0,strlen(buf));
+		serv.n = recvfrom(serv.sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &serv.cli_addr, &serv.clilen);
+		if (serv.n < 0) 
+			printf("ERROR on recvfrom");
 
-		flag = (char*)calloc(sizeof(char), 1);
-		flag[0] = FLAG;
-		
-		strcat(msg, flag);
-		strcat(msg, address);
-		strcat(msg, control);		
-		strcat(msg, opcode);
-		strcat(msg, filename);
-		strcat(msg, crc);
-		strcat(msg, flag);
+		//teste CRC
+			printf("%s\n", buf);
 
-		send_message(msg);
-		
-		send_file();
+		set_in(buf);
+			
+	}while(strlen(buf) == INTERM_BLOCK_SIZE+6);	
+
 }
 
-void rcv_out_buffer()
+void entry_monitor()
 {
-	char *msg, *aux;
-	int condition = 0;
-	do
+		char buf[520];
+		serv.n = recvfrom(serv.sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &serv.cli_addr, &serv.clilen);
+		if (serv.n < 0) 
+			printf("ERROR on recvfrom");
+
+	printf("%i",buf[OPCODE_POS]);
+		//teste CRC
+	switch(buf[OPCODE_POS])
 	{
-	msg = receive_message();
-	aux = (char*)malloc(strlen(msg)-6);
-	strncpy(aux, msg+3, strlen(msg)-6);
-	//test CRC: 
-		switch(msg[3])
-		{
-			case RCV_REQ:
-
+		case RCV_REQ:
 			break;
-			case SEND_REQ:
-
+		case SEND_REQ:
+			pthread_create(&recv_in, NULL, (void*)recv_to_in, NULL);
+			pthread_join(recv_in, NULL);
 			break;
-			case DATA:
-			set_in(aux);
-			condition = (strlen(aux) == IN_BLOCK_SIZE+1);
+		case DATA:
 			break;
-			case ERROR:
-
+		case ERROR:
 			break;
-			default:
-				printf("INVALID CODE RECEIVED");
-		}
-	}while(condition);	 
-
+	}
 }

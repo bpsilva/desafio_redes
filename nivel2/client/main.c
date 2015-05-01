@@ -22,18 +22,7 @@ void write_file_aux()
   	
 }
  
- void send_file()
- {
 
-
-				pthread_create(&read_file_thread, NULL, (void*)readFile, NULL);
-				pthread_create(&i_to_out_thread, NULL, (void*)interm_to_out, NULL);
-				pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
-				
-				pthread_join(read_file_thread, NULL);
-				pthread_join(i_to_out_thread, NULL);
-				pthread_join(send_out, NULL);
- }
 
 
 int main(int argc, char *argv[])
@@ -58,8 +47,7 @@ int main(int argc, char *argv[])
 				printf("Digite o nome do arquivo:\n");
 				scanf("%s", filename);
 				send_write_request();
-				//send server request
-				//send file
+
 				break;
 			default:
 				printf("Opção inválida.\n");
