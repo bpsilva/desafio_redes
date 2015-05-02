@@ -9,12 +9,17 @@
 #define BROADCAST 0x0FF
 #define FLAG 0x7E
 
+#define RR 0
+#define REJ 1
+
 #include "out_buffer.h"
 #include "in_buffer.h"
 #include "interm_buffer.h"
 #include "client_udp.h"
 
 void init(int argc, char *argv[]);
+void send_file();
+
 
 //----------------FILE / INTERMIDIATE ----------------
 void readFile();
@@ -32,9 +37,8 @@ pthread_t i_to_out_thread;
 
 //----------------- OUT BUFFER / EXTERN----------
 void send_out_buffer();
-void rcv_out_buffer();
-
 void send_write_request();
+
 
 //---------------------CONFIRMATION-----------------
 pthread_t recv_confirmation;

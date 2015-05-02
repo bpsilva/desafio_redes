@@ -1,7 +1,7 @@
 #ifndef INTERM_BUFFER_H
 #define INTERM_BUFFER_H
 #define INTERM_BUFFER_SIZE 100
-#define INTERM_BLOCK_SIZE 512
+#define INTERM_BLOCK_SIZE 12
 #include <pthread.h>
 #include <semaphore.h>
 int interm_get_pos;

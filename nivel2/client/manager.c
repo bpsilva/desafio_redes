@@ -7,7 +7,7 @@
 
 void interm_to_out()
 {
-	char *text, * msg, *flag, *address , *control, *crc;
+	char *text, * msg, *opcode,*flag, *address , *control, *crc;
 	int NS = 0;
 	do
 	{
@@ -21,7 +21,9 @@ void interm_to_out()
 		
 		control = (char*)calloc(sizeof(char), 1);
 		control[0] = NS;
-		
+
+		opcode = (char*)calloc(sizeof(char), 1);
+		opcode[0] = 3;
 
 		crc = (char*)calloc(sizeof(char), 2);
 		
@@ -34,12 +36,12 @@ void interm_to_out()
 		strcat(msg, flag);
 		strcat(msg, address);
 		strcat(msg, control);		
+		strcat(msg, opcode);
 		strcat(msg, text);
 		strcat(msg, crc);
 		strcat(msg, flag);
-		//strncpy(msg, text, strlen(text));
-		//copy_data(msg, text, strlen(text));
 
+		printf("%s\n", msg);
 		set_out(msg);
 	 	
 	 	if(NS == OUT_BUFFER_SIZE-1)
@@ -133,42 +135,52 @@ void init(int argc, char *argv[])
 
 //CLIENT UDP INIT
 	connection(argc, argv);
-
 }
 
+int cmp(char* msg)
+{
+	int i;
+	for(i = 0 ; i < strlen(filename);i++)
+	{
+		if(filename[i]!=msg[i])
+			return 0;
+	}
+	return 1;
+}
 void send_out_buffer()
 {
 	char *msg;
+
  	do
   	{
 		msg = get_out();
 
 		send_message(msg);
-		printf("%i    %i\n", strlen(msg), INTERM_BLOCK_SIZE+6);
-  	}while(strlen(msg) == INTERM_BLOCK_SIZE+6);
+		printf("%i    %i\n", strlen(msg), INTERM_BLOCK_SIZE+7);
+  	}while(strlen(msg) == INTERM_BLOCK_SIZE+7 || cmp(msg+4));
 }
+
+
 
 
  void send_file()
  {
-
-
 				pthread_create(&read_file_thread, NULL, (void*)readFile, NULL);
 				pthread_create(&i_to_out_thread, NULL, (void*)interm_to_out, NULL);
 				pthread_create(&send_out, NULL, (void*)send_out_buffer, NULL);
-				pthread_create(&recv_confirmation, NULL, (void*)recv_confirm, NULL);
+				//pthread_create(&recv_confirmation, NULL, (void*)recv_confirm, NULL);
 				
 				pthread_join(read_file_thread, NULL);
 				pthread_join(i_to_out_thread, NULL);
 				pthread_join(send_out, NULL);
-				pthread_join(recv_confirmation, NULL);
+				//pthread_join(recv_confirmation, NULL);
  }
 
 void send_write_request()
 {
 		char * msg, *flag, *address , *control, *crc, *opcode;
 		
-		msg = (char*)calloc(sizeof(char), strlen(filename)+6);
+		msg = (char*)calloc(sizeof(char), strlen(filename)+7);
 	
 		address = (char*)calloc(sizeof(char), 1);
 		address[0] = BROADCAST;
@@ -195,18 +207,23 @@ void send_write_request()
 		strcat(msg, crc);
 		strcat(msg, flag);
 
-		send_message(msg);
+		set_out(msg);//send the request for reading to out_buffer
 		
 		send_file();
 }
 
 void recv_confirm()
 {
-	char* msg = receive_message();
-	if((msg[2]>>4) == 0)//RR
+	char* msg;
+
+do
+{
+	msg =  receive_message();
+	switch(msg[2]>>4)
 	{
-		while((msg[2] & 3) != out_win_begin)
-		{
+		case RR:
+			while((msg[2] & 3) != out_win_begin)  //msg & 00000011 -> gets the 2 least singnificant bits
+			{
 				if(out_win_begin == OUT_BUFFER_SIZE-1)
 				{
 					out_win_begin = 0;	
@@ -214,47 +231,14 @@ void recv_confirm()
 					out_win_begin++;
 				}
 			sem_post(&out_buffer_space);
-		}
+			}
+		break;
+		case REJ:
+			sem_wait(&out_buffer_access);
+				out_get = (msg[2] & 3);	//sets the reading pointer to the rej pos (//msg & 00000011 -> gets the 2 least singnificant bits)
+			sem_post(&out_buffer_access);
+		break;
 	}
-	if((msg[2]>>4) == 1)//REJ
-	{
-		sem_wait(&out_buffer_access);
-		out_get = (msg[2] & 3);
-		sem_post(&out_buffer_access);
-	}
-
-
+}while(1);
 }
 
-
-void rcv_out_buffer()
-{
-	char *msg, *aux;
-	int condition = 0;
-	do
-	{
-	msg = receive_message();
-	aux = (char*)malloc(strlen(msg)-6);
-	strncpy(aux, msg+3, strlen(msg)-6);
-	//test CRC: 
-		switch(msg[3])
-		{
-			case RCV_REQ:
-
-			break;
-			case SEND_REQ:
-
-			break;
-			case DATA:
-			set_in(aux);
-			condition = (strlen(aux) == IN_BLOCK_SIZE+1);
-			break;
-			case ERROR:
-
-			break;
-			default:
-				printf("INVALID CODE RECEIVED");
-		}
-	}while(condition);	 
-
-}

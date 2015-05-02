@@ -33,7 +33,10 @@ pthread_t write__file_thread;
 //----------------- INTERMIDIATE BUFFER / OUT BUFFER----------
 void interm_to_out();
 pthread_t i_to_out_thread;
-
+pthread_t confirm;
+pthread_t save_f;
+pthread_t i_to_out_thread;
+void confirmation();
 
 //----------------- OUT BUFFER / EXTERN----------
 void send_out_buffer();
